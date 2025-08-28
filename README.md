@@ -16,6 +16,10 @@
 
 </div>
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Stoeaves/StpCloud&type=Date)](https://www.star-history.com/#Stoeaves/StpCloud&Date)
+
 ## 开源协议
 
 [GPL-3.0](LICENSE)
