@@ -17,7 +17,7 @@ A Cloud Storage Service Tailored for Individuals
 </div>
 
 ## Usage
-
+The code is editing! Please waiting!
 
 ## Star History
 
