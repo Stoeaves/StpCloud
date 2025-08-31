@@ -4,7 +4,7 @@
 
 [English](README_EN.md) / 简体中文
 
-一个基于Cloudflare、Github API，为个人打造的云盘服务
+一个基于Cloudflare Worker、Github API，为个人打造的云盘服务
 
 <p>
 <a href="https://www.gnu.org/licenses/gpl-3.0.html"><img src="https://img.shields.io/github/license/Stoeaves/StpCloud" alt="License: GPL-3.0"></a>
