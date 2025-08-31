@@ -21,9 +21,39 @@
 - 支持私密文件夹
 - 自定义文件分享外链
 
-## 使用
-敬请期待，正在内测中
+## 使用教程
+#### 1.准备材料：
+- 一个Github账户
+- 一个Cloudflare账户
+- Github Personal access tokens (classic) __如果你已登录，请[点击这里前往生成](https://github.com/settings/tokens)__
 
+#### 2.下载文件
+- **_worker.js** Worker文件
+- **page.zip** 网页压缩包
+
+#### 3.部署
+- **Cloudflare操作：**
+- 1.创建Worker，将下载的 **_worker.js** 文件内容复制到新建Worker中
+- 2.创建KV，在Worker中绑定KV，变量名为：**KV**
+- 3.创建Pages，将下载的**page.zip**上传至Pages并部署
+> 需要将**page.zip**中assets文件夹中的**constant.js**中的apiUrl修改为你的worker地址！
+- **Github操作：**
+- 1.创建一个仓库
+- 2.在Settings -> Developer Settings -> Personal access tokens -> Tokens (classic)中创建一个Token
+
+### Cloudflare Worker环境变量
+| 变量名 | 是否必须 | 说明 |
+| :--- | :--- | :--- |
+| ADMIN_PASS | 是 | 管理员密码 |
+| GITHUB_TOKEN | 是 | Github Personal access token |
+| REPO_OWNER | 是 | Github账户名 |
+| REPO_NAME | 是 | 仓库名 |
+| REPO_BRANCH | 是 | 仓库分支 |
+### Github Token说明：
+- **需要的权限** ~~如果你相信我们你可以勾选所有权限~~ __当然我知道你不会这样做__
+- 1.__repo__ 所有权限
+- 2.__project__ 所有权限
+- 3.__codespace__ 所有权限
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Stoeaves/StpCloud&type=Date)](https://www.star-history.com/#Stoeaves/StpCloud&Date)
