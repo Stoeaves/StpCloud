@@ -50,10 +50,10 @@
 | REPO_NAME | 是 | 仓库名 |
 | REPO_BRANCH | 是 | 仓库分支 |
 ### Github Token说明：
-- **需要的权限** ~~如果你相信我们你可以勾选所有权限~~ __当然我知道你不会这样做__
-- 1.__repo__ 所有权限
-- 2.__project__ 所有权限
-- 3.__codespace__ 所有权限
+- **需要的权限** ~~如果你相信我们你可以勾选所有权限~~ _当然我知道你不会这样做_
+- 1._repo_ 所有权限
+- 2._project_ 所有权限
+- 3._codespace_ 所有权限
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Stoeaves/StpCloud&type=Date)](https://www.star-history.com/#Stoeaves/StpCloud&Date)
