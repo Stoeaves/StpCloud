@@ -16,17 +16,10 @@
 
 </div>
 
-## 功能
-<div>
-  <p>
-    <input type="checkbox" checked>
-    基础文件上传、删除、下载
-  </p>
-  <p>
-    <input type="checkbox" checked>
-    支持私密文件夹
-  </p>
-</div>
+## ✅已实现功能
+- 基础文件上传、删除、下载
+- 支持私密文件夹
+- 自定义文件分享外链
 
 ## 使用
 敬请期待，正在内测中
