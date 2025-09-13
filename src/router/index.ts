@@ -1,13 +1,13 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router';
+import { startProgress, closeProgress } from '../lib/nprogress';
 
-// 定义路由规则
 const routes: Array<RouteRecordRaw> = [
   {
-    path: '/', // 路径以 / 开头
+    path: '/',
     name: 'Home',
-    component: () => import('@/views/HomeView.vue'), // 确保路径别名 @ 配置正确
+    component: () => import('@/views/HomeView.vue'),
   },
-  // 其他路由...
+
   {
     path: '/admin',
     name: 'Admin',
@@ -18,7 +18,7 @@ const routes: Array<RouteRecordRaw> = [
     name: 'Download',
     component: () => import('@/views/DownloadView.vue'),
   },
-  // 通配符路由放在最后
+
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
@@ -26,10 +26,18 @@ const routes: Array<RouteRecordRaw> = [
   },
 ];
 
-// 创建路由实例，这里先使用 hash 模式排除问题
 const router = createRouter({
-  history: createWebHashHistory(), // 使用 hash 模式
+  history: createWebHashHistory(),
   routes,
+});
+
+router.beforeEach((_to, _from, next) => {
+  startProgress();
+  next();
+});
+
+router.afterEach(() => {
+  closeProgress();
 });
 
 export default router;
