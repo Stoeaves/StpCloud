@@ -1,6 +1,6 @@
 {
   "name": "stpcloud-service",
-  "compatibility_date": "2025-09-013",
+  "compatibility_date": "2025-09-13",
   "assets": {
     "directory": "./dist"
   }
