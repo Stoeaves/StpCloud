@@ -4,7 +4,9 @@
 
 [English](README_EN.md) / 简体中文
 
-一个基于Cloudflare Worker、Github API，为个人打造的云盘服务
+[演示站点](https://file.seave.top) / [使用教程](https://seave.top/posts/stpcloud/)
+
+一个基于 Cloudflare Worker、Github API，为个人打造的云盘服务
 
 <p>
 <a href="https://www.gnu.org/licenses/gpl-3.0.html"><img src="https://img.shields.io/github/license/Stoeaves/StpCloud" alt="License: GPL-3.0"></a>
@@ -13,47 +15,48 @@
 <a href="https://github.com/Stoeaves/StpCloud/releases"><img src="https://img.shields.io/github/v/release/Stoeaves/StpCloud" alt="GitHub release"></a>
 </p>
 
-
 </div>
 
-## ✅已实现功能
-- 基础文件上传、删除、下载
+## ✅ 已实现功能
+
+- 基础文件上传、下载
 - 支持私密文件夹
 - 自定义文件分享外链
 
 ## 使用教程
-#### 1.准备材料：
-- 一个Github账户
-- 一个Cloudflare账户
-- Github Personal access tokens (classic) __如果你已登录，请[点击这里前往生成](https://github.com/settings/tokens)__
 
-#### 2.下载文件
-- **_worker.js** Worker文件
-- **page.zip** 网页压缩包
+#### 1.准备工作：
 
-#### 3.部署
-- **Cloudflare操作：**
-- 1.创建Worker，将下载的 **_worker.js** 文件内容复制到新建Worker中
-- 2.创建KV，在Worker中绑定KV，变量名为：**KV**
-- 3.创建Pages，将下载的**page.zip**上传至Pages并部署
-> 需要将**page.zip**中assets文件夹中的**constant.js**中的apiUrl修改为你的worker地址！
-- **Github操作：**
-- 1.创建一个仓库
-- 2.在Settings -> Developer Settings -> Personal access tokens -> Tokens (classic)中创建一个Token
+- 一个 Github 账户
+- 一个 Cloudflare 账户
+- Github Personal access tokens (classic) **如果你已登录，请[点击这里前往生成](https://github.com/settings/tokens)**
+- Fork 此仓库
 
-### Cloudflare Worker环境变量
-| 变量名 | 是否必须 | 说明 |
-| :--- | :--- | :--- |
-| ADMIN_PASS | 是 | 管理员密码 |
-| GITHUB_TOKEN | 是 | Github Personal access token |
-| REPO_OWNER | 是 | Github账户名 |
-| REPO_NAME | 是 | 仓库名 |
-| REPO_BRANCH | 是 | 仓库分支 |
-### Github Token说明：
-- **需要的权限** ~~如果你相信我们你可以勾选所有权限~~ _当然我知道你不会这样做_
-- 1._repo_ 所有权限
-- 2._project_ 所有权限
-- 3._codespace_ 所有权限
+#### 2.部署
+
+- **Cloudflare Worker:**
+- 前往[Cloudflare](https://dash.cloudflare.com)
+- 创建一个 Worker
+- 复制[_worker.js](https://github.com/Stoeaves/StpCloud/blob/main/_worker.js)的内容
+- 粘贴至创建的 Worker 当中并部署
+- **Github:**
+- Fork 此仓库
+- 在你 Fork 的仓库里修改 **`vite.config.ts`** 中第 26 行的 **`__API_URL__`** 的链接改成你的 Worker 地址（可以自定义）
+- 再次返回 Cloudflare Worker 当中创建一个 Worker
+- 选择 **`导入储存库`** 并选择你 Fork 的仓库
+- 无需任何操作直接点击部署等待成功即可
+
+#### 3.使用
+
+- 点击[这里](https://seave.top/posts/stpcloud/)查看使用教程
+
+## Q&A
+
+- **为什么没有删除文件功能？**
+  - 由于我们采用分片上传形式，目前Github API并不支持删除文件夹功能，会导致删除文件特别缓慢，故暂不提供删除文件功能
+- **我该如何删除文件？**
+  - 在Github仓库中，找到对应文件哈希值的文件夹，删除即可（效率非常高）
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Stoeaves/StpCloud&type=Date)](https://www.star-history.com/#Stoeaves/StpCloud&Date)

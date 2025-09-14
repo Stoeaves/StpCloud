@@ -16,8 +16,43 @@ A Cloud Storage Service Tailored for Individuals
 
 </div>
 
+## ✅ Features
+- Basic file upload and download
+- Support private folders
+- Customize file sharing external links
+
 ## Usage
-The code is editing! Please waiting!
+
+#### 1. Preparation 
+
+- A Github Account
+- A Cloudflare Account
+- Github Personal Access Tokens (Classic) **If you have logged in Github, please click [there to generate your token](https://github.com/settings/tokens)**
+- Fork this repository
+
+#### 2. Deployment
+
+- **Cloudflare Worker:**
+- Go to [Cloudflare](https://dash.cloudflare.com)
+- Create a new Worker
+- Copy the code in the [_worker.js](https://github.com/Stoeaves/StpCloud/blob/main/_worker.js) file to the Worker
+- Click the "Save & Deploy" button
+- **Github:**
+- Fork this repository
+- Modify **`__API_URL__`** in **`vite.config.ts`** on line 26 into the URL of your Cloudflare Worker
+- Return to Cloudflare Worker, and create a new worker again
+- Select **`Import a repository`** and select the forked repository
+- Click the "Save & Deploy" button
+
+#### 3. Usage
+- Click [here](https://seave.top/posts/stpcloud/) to view the usage tutorial
+
+## Q&A
+
+- **Why is there no file deletion function?**
+   - Due to our use of sharded upload, the Github API currently does not support the deletion of folders, which can result in slow file deletion. Therefore, we do not currently provide the function of deleting files.
+- **How should I delete files?**
+   - In the Github repository, find the folder with the corresponding file hash value name and delete it (very efficient)
 
 ## Star History
 

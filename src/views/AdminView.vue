@@ -3,21 +3,19 @@
     class="login"
     v-if="!isLoggedIn"
   >
-    <div class="login">
-      <h1 class="text-[28px] font-bold">管理员登录</h1>
-      <input
-        type="password"
-        id="password"
-        placeholder="请输入管理员密码"
-        @input="pwd = $event.target.value"
-      />
-      <button
-        id="loginSubmit"
-        @click="checkLogin(pwd)"
-      >
-        登录
-      </button>
-    </div>
+    <h1 class="text-[28px] font-bold">管理员登录</h1>
+    <input
+      type="password"
+      id="password"
+      placeholder="请输入管理员密码"
+      @input="pwd = $event.target.value"
+    />
+    <button
+      id="loginSubmit"
+      @click="checkLogin(pwd)"
+    >
+      登录
+    </button>
   </div>
   <div
     id="index"
@@ -25,6 +23,7 @@
   >
     <Header>
       <HeaderButton
+        v-if="path === '/'"
         text="新建文件夹"
         icon="folder"
         colorStyle="#ff8e15"
@@ -62,9 +61,9 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue';
+  import { inject, ref } from 'vue';
   import Header from '@/contents/Header.vue';
-  import PathBar from '@/components/PathBar.vue';
+  import PathBar from '@/contents/PathBar.vue';
   import FileList from '@/contents/FileList.vue';
 
   import checkPassword from '../utils/Admin';
@@ -73,6 +72,8 @@
   import Mark from '@/components/Mark.vue';
   import Upload from '@/components/Upload.vue';
   import CreateFolder from '@/components/CreateFolder.vue';
+
+  const path = inject('path');
 
   const isLoggedIn = ref(false);
   const pwd = ref('');

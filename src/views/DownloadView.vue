@@ -28,16 +28,61 @@
       <button
         class="btn"
         id="download"
+        @click="start"
+        v-if="!isDownload"
       >
         <font-awesome-icon :icon="`fa-solid fa-download`" />
         下载
       </button>
+
+      <div
+        class="grid w-full mt-[10px] gap-[5px]"
+        v-if="isDownload"
+      >
+        <p>进度：{{ progress }}%</p>
+        <Progress :progress="progress"></Progress>
+      </div>
+      <div
+        class="control-bar"
+        v-if="isDownload && !isComplete"
+      >
+        <div
+          class="btn control-btn pause"
+          v-if="!isPause"
+          @click="pause"
+        >
+          暂停
+        </div>
+
+        <div
+          class="btn control-btn resume"
+          v-if="isPause"
+          @click="resume"
+        >
+          继续
+        </div>
+      </div>
+
+      <div
+        v-if="isComplete"
+        class="mt-[10px]"
+      >
+        浏览器无响应？
+        <a
+          :href="blobLink"
+          :download="name"
+          class="text-blue-500"
+          >点我下载</a
+        >
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
   import { ref } from 'vue';
+  import Progress from '../components/Progress.vue';
+  import { BetterPromise } from '../classes/BetterPromise';
   import { formatFileSize } from '../utils/FormatSize';
   import request from '../utils/Request';
 
@@ -46,12 +91,94 @@
   const date = ref('946656000000');
   const size = ref('0');
 
+  const isDownload = ref(false);
+  const progress = ref(0);
+  const isComplete = ref(false);
+  const isPause = ref(false);
+
+  const blobLink = ref('');
+
+  const bp = new BetterPromise({
+    concurrency: 5,
+    maxRetries: 20,
+    onProgress: (completed, total) => {
+      const percent = Math.floor((completed / total) * 100);
+      progress.value = percent;
+    },
+    onComplete: () => {
+      const results = bp.getAllResults();
+      console.log(results);
+      let chunks = [];
+      for (let [index, result] of results.entries()) {
+        const chunkBlob = result.value;
+        chunks.push({
+          index: index,
+          blob: chunkBlob,
+        });
+      }
+
+      console.log(chunks);
+
+      chunks = chunks.sort((a, b) => a.index - b.index).map((chunk) => chunk.blob);
+
+      const fullBlob = new Blob(chunks, { type: 'application/octet-stream' });
+
+      const url = URL.createObjectURL(fullBlob);
+      blobLink.value = url;
+      isComplete.value = true;
+    },
+    onError: (error, id) => {
+      cocoMessage.error(`分片【${id}】下载失败：${error}`);
+      console.error(`分片【${id}】下载失败：${error}`);
+    },
+    onCancel: () => {
+      cocoMessage.info('下载已取消');
+      isDownload.value = false;
+      isComplete.value = false;
+    },
+  });
+
   (async () => {
     const res = await request.post(`/fileInfo`, { fileName: sha });
     name.value = res.name;
     date.value = res.date;
     size.value = res.size;
+
+    const chunkCount = Math.ceil(Number(size.value) / (2 * 1024 * 1024));
+
+    for (let index = 0; index < chunkCount; index++) {
+      bp.add(() => {
+        return request.post('/download', { sha, index }).then((response) => {
+          return response;
+        });
+        // return fetch(__API_URL__ + `/download`, {
+        //   method: 'POST',
+        //   body: JSON.stringify({
+        //     sha: sha,
+        //     index,
+        //   }),
+        // }).then((response) => {
+        //   if (!response.ok) throw new Error(`下载失败【${response.status}】：${response.statusText}`);
+        //   return response.blob();
+        // });
+      });
+    }
   })();
+
+  const start = () => {
+    isDownload.value = true;
+    bp.start();
+  };
+
+  const pause = () => {
+    isPause.value = true;
+    bp.pause();
+  };
+
+  const resume = () => {
+    isPause.value = false;
+    bp.resume();
+  };
 </script>
 <style>
   #app {
@@ -137,5 +264,23 @@
     box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
     justify-content: center;
     margin-top: 20px;
+  }
+
+  .control-bar {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .control-bar .pause {
+    background: #4361ee;
+  }
+
+  .control-bar .resume {
+    background: #2ecc71;
+  }
+
+  .control-bar .cancel-btn {
+    background: #e74c3c;
   }
 </style>

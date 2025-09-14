@@ -72,10 +72,10 @@
   }
 </style>
 
-<script setup>
+<script setup lang="ts">
   import { ref, inject } from 'vue';
   import Progress from './Progress.vue';
-  import { BetterPromise } from '../classes/BetterPromise.js';
+  import { BetterPromise, type BpOptions } from '../classes/BetterPromise';
   import { FileHash } from '../classes/FileHash';
   import { formatFileSize } from '../utils/FormatSize';
   import { sliceFile, applyToken } from '../utils/Upload';
@@ -85,19 +85,19 @@
   const isUploading = ref(false);
   const isDragging = ref(false);
 
-  const fileList = ref([]);
+  const fileList = ref<Array<{ file: File; progress: number; completed: boolean }>>([]);
 
-  const handleDragOver = (event) => {
+  const handleDragOver = (event: DragEvent) => {
     event.preventDefault();
     isDragging.value = true;
   };
 
-  const handleDragLeave = (event) => {
+  const handleDragLeave = (event: DragEvent) => {
     event.preventDefault();
     isDragging.value = false;
   };
 
-  const handleDrop = (event) => {
+  const handleDrop = (event: DragEvent) => {
     event.preventDefault();
     isDragging.value = false; // 拖拽结束，重置状态
 
@@ -108,14 +108,14 @@
   };
 
   const clickInput = () => {
-    const input = document.querySelector('input[type="file"]');
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     if (input) {
       input.click();
     }
   };
 
-  const uploadFiles = (event, files = undefined) => {
-    files = files || event.target.files;
+  const uploadFiles = (event: Event, files?: FileList) => {
+    files = files || ((event.target as HTMLInputElement).files as FileList);
 
     if (files && files.length > 0) {
       isUploading.value = true;
@@ -124,10 +124,10 @@
       }
 
       var fileId = 0;
-      const bpConfig = {
+      const bpConfig: BpOptions = {
         concurrency: 5,
         maxRetries: 20,
-        onProgress: (completed, total) => {
+        onProgress: (completed: number, total: number) => {
           const percent = Math.floor((completed / total) * 100);
           fileList.value[fileId].progress = percent;
         },
@@ -137,7 +137,7 @@
 
           uploadNext();
         },
-        onError: (error, taskId) => {
+        onError: (error: Error, taskId: number) => {
           cocoMessage.error(`文件【${fileList.value[fileId].file.name}】上传失败：${error}`);
           console.error(`文件【${fileList.value[fileId].file.name}】分片【${taskId}】上传失败：${error}`);
 
@@ -148,29 +148,29 @@
         },
       };
 
-      const uploadNext = async (isNext = true) => {
+      const uploadNext = async (isNext: boolean = true) => {
         if (isNext) fileId++;
 
         // 判断是否完全上传完毕
         if (fileId === fileList.value.length) {
           isUploading.value = false;
-          fileList.value = [];
 
           for (const fileInfo of fileList.value) {
             const file = fileInfo.file;
             const hashGetter = new FileHash(file);
             const hash = await hashGetter.getHash();
 
-            console.log(list);
-            list.files.unshift({
+            (list as any).files.unshift({
               name: file.name,
               size: file.size,
               type: getFileTypeByName(file.name),
               date: Date.parse(new Date().toString()),
               sha: hash,
             });
-            console.log(list);
           }
+
+          fileList.value = [];
+
           return;
         }
 
@@ -206,7 +206,10 @@
               formData.append('index', i.toString());
 
               try {
-                const res = await request.post('/admin/upload', formData);
+                const res = await request.post<{
+                  code: number;
+                  message?: string;
+                }>('/admin/upload', formData);
 
                 if (res.code === 400) reject(`上传分片【${i}】失败：${res.message}`);
 
@@ -226,8 +229,8 @@
     }
   };
 
-  const getFileTypeByName = (filename) => {
-    function getFileExtension(filename) {
+  const getFileTypeByName = (filename: string) => {
+    function getFileExtension(filename: string) {
       const match = filename.match(/\.([^.]+)$/);
       return match ? match[1] : '';
     }

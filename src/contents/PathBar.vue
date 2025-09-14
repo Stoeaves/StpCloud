@@ -1,13 +1,25 @@
 <template>
   <div class="pathBar">
     <p>当前目录：</p>
-    <a @click="$router.push('/')">首页</a>
+    <a @click="returnIndex">首页</a>
+    <span v-if="pathInfo.length > 1">/</span>
+    <a
+      v-if="pathInfo.length > 1"
+      @click="$router.push('/' + pathInfo[1].path)"
+    >
+      {{ pathInfo[1].name }}
+    </a>
   </div>
 </template>
 <script setup>
   import { inject } from 'vue';
   const path = inject('path');
   const pathInfo = inject('pathInfo');
+
+  const returnIndex = () => {
+    path.value = '/';
+    if (pathInfo.length > 1) pathInfo.pop();
+  };
 </script>
 <style scoped>
   .pathBar {

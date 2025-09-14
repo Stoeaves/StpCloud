@@ -23,7 +23,7 @@
 
 <script setup>
   import Header from '@/contents/Header.vue';
-  import PathBar from '@/components/PathBar.vue';
+  import PathBar from '@/contents/PathBar.vue';
   import FileList from '@/contents/FileList.vue';
   import HeaderButton from '@/components/HeaderButton.vue';
 </script>

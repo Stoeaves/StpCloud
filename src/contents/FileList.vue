@@ -3,9 +3,16 @@
     id="file-container"
     class="bg-white rounded-[12px] p-[30px] shadow-(--shadow) mb-[30px]"
   >
+    <div
+      class="w-full h-[200px] grid"
+      v-if="list.files.length === 0 && list.folders.length === 0"
+    >
+      <p class="place-self-center">暂无数据呢 :)</p>
+    </div>
     <table
       id="files-table"
       class="w-full border-collapse table-fixed"
+      v-else
     >
       <thead>
         <tr>
@@ -19,6 +26,7 @@
       <tbody id="file-list">
         <tr
           v-for="folder in list.folders"
+          @click="openFolder(folder.id, folder.name, folder.permission)"
           class="hover:bg-[#4361ee0d] cursor-pointer"
         >
           <td>
@@ -31,17 +39,19 @@
               </div>
             </div>
           </td>
-
           <td>文件夹</td>
           <td class="text-(--gray)">0 Byte</td>
           <td>
-            <button class="index-btn">
+            <button
+              class="index-btn"
+              @click="openFolder(folder.id, folder.name, folder.permission)"
+            >
               <font-awesome-icon :icon="`fa-solid fa-eye`" />
               查看
             </button>
           </td>
         </tr>
-
+        <tr></tr>
         <tr
           v-for="file in list.files"
           class="hover:bg-[#4361ee0d] cursor-pointer"
@@ -75,6 +85,23 @@
     </table>
   </div>
 </template>
+
+<script setup>
+  import { inject } from 'vue';
+  import { formatFileSize } from '../utils/FormatSize';
+  const list = inject('list');
+  const path = inject('path');
+  const pathInfo = inject('pathInfo');
+
+  const openFolder = (id, name, permission) => {
+    const fileName = 'folder-' + id;
+    path.value += fileName;
+    pathInfo.push({
+      path: '/folder-' + id,
+      name,
+    });
+  };
+</script>
 
 <style scoped>
   tr {
@@ -148,10 +175,27 @@
     box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
     gap: 5px;
   }
-</style>
 
-<script setup>
-  import { inject } from 'vue';
-  import { formatFileSize } from '../utils/FormatSize';
-  const list = inject('list');
-</script>
+  @media (max-width: 768px) {
+    th:nth-child(2),
+    td:nth-child(2) {
+      display: none;
+    }
+
+    th:nth-child(3),
+    td:nth-child(3) {
+      display: none;
+    }
+
+    .file-info {
+      gap: 10px;
+    }
+  }
+
+  @media (max-width: 530px) {
+    th:nth-child(4),
+    td:nth-child(4) {
+      display: none;
+    }
+  }
+</style>

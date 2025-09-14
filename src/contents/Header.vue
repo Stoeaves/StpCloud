@@ -18,3 +18,11 @@
     </div>
   </header>
 </template>
+<style>
+  @media (max-width: 580px) {
+    header {
+      flex-direction: column;
+      gap: 20px;
+    }
+  }
+</style>

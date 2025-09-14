@@ -2,7 +2,7 @@
   <router-view></router-view>
 </template>
 <script setup>
-  import { provide, ref, reactive } from 'vue';
+  import { provide, ref, reactive, watch } from 'vue';
   import request from './utils/Request';
 
   const list = reactive({
@@ -10,7 +10,12 @@
     files: [],
   });
   const path = ref('/');
-  const pathInfo = reactive({});
+  const pathInfo = reactive([
+    {
+      path: '/',
+      name: '首页',
+    },
+  ]);
 
   provide('list', list);
   provide('path', path);
@@ -23,5 +28,7 @@
 
     list.files = filesRes;
     list.folders = foldersRes;
+
+    watch(path, async (newPath) => {});
   })();
 </script>
