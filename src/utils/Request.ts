@@ -8,12 +8,13 @@ const service: AxiosInstance = axios.create({
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (config.data) {
+      const adminPass = localStorage.getItem('adminPassword') ?? '';
       if (config.data instanceof FormData) {
         config.headers['Content-Type'] = 'multipart/form-data';
-        const adminPass = localStorage.getItem('adminPassword') ?? '';
         config.data?.append('adminPass', adminPass);
       } else if (typeof config.data === 'object' && !config.headers['Content-Type']) {
         config.headers['Content-Type'] = 'application/json';
+        config.data.adminPass = adminPass;
       }
     }
 

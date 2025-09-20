@@ -107,23 +107,26 @@
     },
     onComplete: () => {
       const results = bp.getAllResults();
-      console.log(results);
       let chunks = [];
       for (let [index, result] of results.entries()) {
-        const chunkBlob = result.value;
+        const chunkBlob = new Blob([result.value], { type: 'application/octet-stream' });
         chunks.push({
           index: index,
           blob: chunkBlob,
         });
       }
 
-      console.log(chunks);
-
       chunks = chunks.sort((a, b) => a.index - b.index).map((chunk) => chunk.blob);
 
       const fullBlob = new Blob(chunks, { type: 'application/octet-stream' });
 
       const url = URL.createObjectURL(fullBlob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name.value;
+      a.click();
+
       blobLink.value = url;
       isComplete.value = true;
     },
@@ -148,19 +151,9 @@
 
     for (let index = 0; index < chunkCount; index++) {
       bp.add(() => {
-        return request.post('/download', { sha, index }).then((response) => {
+        return request.post('/download', { sha, index }, { responseType: 'blob' }).then((response) => {
           return response;
         });
-        // return fetch(__API_URL__ + `/download`, {
-        //   method: 'POST',
-        //   body: JSON.stringify({
-        //     sha: sha,
-        //     index,
-        //   }),
-        // }).then((response) => {
-        //   if (!response.ok) throw new Error(`下载失败【${response.status}】：${response.statusText}`);
-        //   return response.blob();
-        // });
       });
     }
   })();

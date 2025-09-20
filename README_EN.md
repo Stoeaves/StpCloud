@@ -6,6 +6,8 @@ English / [简体中文](README_EN.md)
 
 A Cloud Storage Service Tailored for Individuals
 
+English language is under development, please wait for the update
+
 <p>
 <a href="https://www.gnu.org/licenses/gpl-3.0.html"><img src="https://img.shields.io/github/license/Stoeaves/StpCloud" alt="License: GPL-3.0"></a>
 <a href="https://github.com/Stoeaves/StpCloud/stargazers"><img src="https://img.shields.io/github/stars/Stoeaves/StpCloud" alt="GitHub stars"></a>

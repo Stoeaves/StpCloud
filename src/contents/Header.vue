@@ -23,6 +23,7 @@
     header {
       flex-direction: column;
       gap: 20px;
+      padding-inline: 0px;
     }
   }
 </style>
