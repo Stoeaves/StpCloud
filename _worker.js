@@ -15,9 +15,13 @@ export default {
     // 管理员
     if (pathname.startsWith('/admin') && method === 'POST') {
       var data;
-
-      if (contentType?.includes('multipart/form-data')) data = await request.formData();
-      else data = await request.json();
+      if (contentType?.includes('application/json')) data = await request.json();
+      else if (contentType?.includes('multipart/form-data')) data = await request.formData();
+      else
+        return returns({
+          code: 400,
+          message: 'Bad Request',
+        });
 
       const admin = handle.admin(data, env);
       if (admin === 401)
@@ -36,9 +40,9 @@ export default {
       if (action === 'upload') return admin.upload(data, request, env);
       // 创建文件夹
       if (action === 'createFolder') return admin.createFolder(data, request, env);
+      // 删除文件
+      if (action === 'delete') return admin.deleteFile(data, request, env);
     }
-
-    //
 
     return returns({
       code: 404,
@@ -56,7 +60,7 @@ const returns = (json) => {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type',
     },
   });
 };
@@ -146,7 +150,7 @@ const handle = {
     const method = request.method;
     const { searchParams } = new URL(request.url);
 
-    const data = method === 'GET' ? searchParams : await request.json();
+    const data = searchParams;
     const path = data.get('path') ?? '/';
 
     if (path !== '/') {
@@ -154,17 +158,19 @@ const handle = {
       if (folderInfo.permission === 'private') {
         if (method !== 'POST')
           return returns({
-            code: 403,
-            message: 'Forbidden',
+            code: 400,
+            message: 'Bad Request',
           });
 
-        const adminPass = data['adminPass'];
-        const folderPwd = md5(data['folderPass']);
+        const data = await request.json();
+
+        const adminPass = data.get('adminPass');
+        const folderPwd = md5(data.get('folderPass'));
         const folderPass = await env.KV.get(`folder_${folderInfo.id}_pass`);
         if (folderPwd !== folderPass && !checkAdminPass(adminPass, env))
           return returns({
-            code: 403,
-            message: 'Forbidden',
+            code: 401,
+            message: 'Unauthorized',
           });
       }
     }
@@ -306,7 +312,7 @@ const handle = {
         if (!res.ok) {
           const error = await res.json();
           return returns({
-            code: 500,
+            code: 400,
             message: `GitHub error: ${error.message}`,
           });
         }
@@ -371,12 +377,29 @@ const handle = {
         if (!res.ok) {
           const error = await res.json();
           return returns({
-            code: 500,
+            code: 400,
             message: `GitHub error: ${error.message}`,
           });
         }
 
-        return returns({ code: 200 });
+        return returns({ code: 200, id });
+      },
+      // 删除文件
+      deleteFile: async function (data, request, env) {
+        const sha = data.get('sha');
+        const index = data.get('index');
+
+        const res = await fetch(`${getBaseURL(env)}/${sha}/${index}`, {
+          method: 'DELETE',
+          headers: getHeader(env),
+          body: JSON.stringify({
+            branch: env.REPO_BRANCH,
+            message: `Delete ${sha}`,
+            sha,
+          }),
+        });
+
+        return returns({ success: res.ok });
       },
     };
   },

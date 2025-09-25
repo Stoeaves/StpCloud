@@ -1,7 +1,7 @@
 <template>
   <div class="pathBar">
     <p>当前目录：</p>
-    <a @click="returnIndex">首页</a>
+    <a @click="returnIndex()">首页</a>
     <span v-if="pathInfo.length > 1">/</span>
     <a
       v-if="pathInfo.length > 1"

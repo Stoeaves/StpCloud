@@ -95,11 +95,13 @@
 
   const openFolder = (id, name, permission) => {
     const fileName = 'folder-' + id;
-    path.value += fileName;
-    pathInfo.push({
-      path: '/folder-' + id,
-      name,
-    });
+    path.value = `/${fileName}`;
+    if (pathInfo.length === 1) {
+      pathInfo.push({
+        path: '/folder-' + id,
+        name,
+      });
+    }
   };
 </script>
 
