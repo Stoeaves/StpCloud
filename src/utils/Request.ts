@@ -11,10 +11,10 @@ service.interceptors.request.use(
       const adminPass = localStorage.getItem('adminPassword') ?? '';
       if (config.data instanceof FormData) {
         config.headers['Content-Type'] = 'multipart/form-data';
-        config.data?.append('adminPass', adminPass);
+        if (adminPass) config.data?.append('adminPass', adminPass);
       } else if (typeof config.data === 'object' && !config.headers['Content-Type']) {
         config.headers['Content-Type'] = 'application/json';
-        config.data.adminPass = adminPass;
+        if (adminPass) config.data.adminPass = adminPass;
       }
     }
 

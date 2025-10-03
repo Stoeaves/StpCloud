@@ -1,9 +1,9 @@
 <template>
   <Header>
-    <HeaderButton
+    <!-- <HeaderButton
       text="搜索"
       icon="search"
-    ></HeaderButton>
+    ></HeaderButton> -->
 
     <router-link
       to="/admin"

@@ -5,6 +5,7 @@
 ::-webkit-scrollbar {
   width: 0;
 }
+
 #app {
   background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   color: var(--dark);
@@ -25,4 +26,23 @@
   --light-gray: #e9ecef;
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   --transition: all 0.3s ease;
+}
+
+.custom-container {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 30px;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow);
+}
+
+@media screen and (max-width: 400px) {
+  #app {
+    padding: 0;
+  }
+
+  .custom-container {
+    border-radius: 0;
+    padding: 20px 10px;
+  }
 }

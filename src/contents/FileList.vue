@@ -1,13 +1,23 @@
 <template>
   <div
     id="file-container"
-    class="bg-white rounded-[12px] p-[30px] shadow-(--shadow) mb-[30px]"
+    class="custom-container"
   >
+    <!-- 加载 -->
     <div
       class="w-full h-[200px] grid"
-      v-if="list.files.length === 0 && list.folders.length === 0"
+      v-if="list.requestStatus === 'pending'"
     >
-      <p class="place-self-center">暂无数据呢 :)</p>
+      <div class="place-self-center">
+        <div id="spinner"></div>
+      </div>
+    </div>
+    <!-- 无数据 -->
+    <div
+      class="w-full h-[200px] grid"
+      v-else-if="list.files.length === 0 && list.folders.length === 0"
+    >
+      <p class="place-self-center">这里空空如野 ( ^ // ^ )</p>
     </div>
     <table
       id="files-table"
@@ -16,10 +26,10 @@
     >
       <thead>
         <tr>
-          <th class="w-[50%]">名称</th>
-          <th class="w-[15%]">类型</th>
-          <th class="w-[15%]">大小</th>
-          <th class="w-[20%]">操作</th>
+          <th class="w-[60%]">名称</th>
+          <th class="w-[20%]">类型</th>
+          <th class="w-[20%]">大小</th>
+          <!-- <th class="w-[20%]">操作</th> -->
         </tr>
       </thead>
 
@@ -41,21 +51,12 @@
           </td>
           <td>文件夹</td>
           <td class="text-(--gray)">0 Byte</td>
-          <td>
-            <button
-              class="index-btn"
-              @click="openFolder(folder.id, folder.name, folder.permission)"
-            >
-              <font-awesome-icon :icon="`fa-solid fa-eye`" />
-              查看
-            </button>
-          </td>
         </tr>
         <tr></tr>
         <tr
           v-for="file in list.files"
           class="hover:bg-[#4361ee0d] cursor-pointer"
-          @click="$router.push(`/download/${file.sha}`)"
+          @click="$router.push(`/download/${path.slice(1, -1)}&${file.sha}`)"
         >
           <td>
             <div class="flex items-center w-full">
@@ -71,15 +72,6 @@
 
           <td>{{ file.type }}</td>
           <td class="text-(--gray)">{{ formatFileSize(Number(file.size)) }}</td>
-          <td>
-            <button
-              class="index-btn"
-              @click="$router.push(`/download/${file.sha}`)"
-            >
-              <font-awesome-icon :icon="`fa-solid fa-download`" />
-              下载
-            </button>
-          </td>
         </tr>
       </tbody>
     </table>
@@ -91,17 +83,18 @@
   import { formatFileSize } from '../utils/FormatSize';
   const list = inject('list');
   const path = inject('path');
+  const pathIndex = inject('pathIndex');
   const pathInfo = inject('pathInfo');
 
   const openFolder = (id, name, permission) => {
     const fileName = 'folder-' + id;
-    path.value = `/${fileName}`;
-    if (pathInfo.length === 1) {
-      pathInfo.push({
-        path: '/folder-' + id,
-        name,
-      });
-    }
+    path.value += `${fileName}/`;
+    pathIndex.value += 1;
+    pathInfo.push({
+      path: path.value,
+      name,
+      index: pathIndex.value,
+    });
   };
 </script>
 
@@ -162,20 +155,24 @@
     white-space: nowrap;
   }
 
-  .index-btn {
-    background: var(--success);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    font-size: 16px;
-    box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
-    gap: 5px;
+  #spinner {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border-width: 3px;
+    border-style: solid;
+    border-color: rgb(100, 108, 255) rgb(240, 240, 240) rgb(240, 240, 240);
+    border-image: initial;
+    animation: 1s cubic-bezier(0.4, 0.1, 0.4, 1) 0s infinite normal none running spinner;
+  }
+
+  @keyframes spinner {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 
   @media (max-width: 768px) {

@@ -23,7 +23,6 @@
   >
     <Header>
       <HeaderButton
-        v-if="path === '/'"
         text="新建文件夹"
         icon="folder"
         colorStyle="#ff8e15"

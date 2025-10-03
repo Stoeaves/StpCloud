@@ -42,6 +42,8 @@
   import request from '../utils/Request';
 
   const list = inject('list');
+  const path = inject('path');
+
   const inputClass = `w-full h-[48px] border-2 border-[#eeeeee] rounded-[12px] p-2.5 text-[14px] outline-none transition-all duration-500 mb-5`;
 
   const folderName = ref('');
@@ -66,6 +68,7 @@
     cocoMessage.info('正在创建文件夹中...');
 
     const res = await request.post('/admin/createFolder', {
+      path: path.value.slice(1, -1),
       name: folderName.value,
       permission: isPrivate.value ? 'private' : 'public',
       folderPass: isPrivate.value ? folderPass.value : '',
@@ -78,6 +81,7 @@
         permission: isPrivate.value ? 'private' : 'public',
         id: res.id,
       });
+      sessionStorage.setItem(`list_${path.value}`, JSON.stringify(list));
       folderName.value = '';
       folderPass.value = '';
       isPrivate.value = false;

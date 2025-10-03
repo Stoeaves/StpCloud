@@ -1,10 +1,19 @@
-<script setup lang="ts"></script>
+<script setup>
+  import { inject } from 'vue';
+
+  const path = inject('path');
+  const pathIndex = inject('pathIndex');
+  const pathInfo = inject('pathInfo');
+</script>
 <template>
-  <header
-    class="bg-white rounded-[12px] px-[30px] py-[20px] mb-[30px] shadow-(--shadow) flex justify-between items-center"
-  >
+  <header class="custom-container flex justify-between items-center">
     <a
-      @click="$router.push('/')"
+      @click="
+        $router.push('/');
+        path = '/';
+        pathIndex = 0;
+        pathInfo.length = 1;
+      "
       class="text-[28px] font-bold text-(--primary) flex items-center gap-[12px] no-underline cursor-pointer"
     >
       <font-awesome-icon

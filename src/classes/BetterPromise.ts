@@ -26,20 +26,20 @@ export class BetterPromise {
   onCancel: Function;
 
   // 控制状态
-  isActive: boolean;
-  isPaused: boolean;
-  isCancelled: boolean;
+  private isActive: boolean;
+  private isPaused: boolean;
+  private isCancelled: boolean;
 
   // 任务管理
-  taskQueue: TaskInfo[];
-  activeTasks: Map<number, TaskInfo>;
-  pendingTasks: Map<number, TaskInfo>;
-  completedCount: number;
-  failedCount: number;
-  totalTasks: number;
-  taskID: number;
-  taskResults: Map<Object, Object>;
-  cancelControllers: Map<number, AbortController>;
+  private taskQueue: TaskInfo[];
+  private activeTasks: Map<number, TaskInfo>;
+  private pendingTasks: Map<number, TaskInfo>;
+  private completedCount: number;
+  private failedCount: number;
+  private totalTasks: number;
+  private taskID: number;
+  private taskResults: Map<Object, Object>;
+  private cancelControllers: Map<number, AbortController>;
 
   /**
    * BetterPromise
@@ -85,7 +85,7 @@ export class BetterPromise {
    */
   add(taskFn: Function, metadata = null) {
     if (this.isCancelled) {
-      return Promise.reject("无法添加任务：调度器已取消");
+      return Promise.reject('无法添加任务：调度器已取消');
     }
 
     const id = this.taskID++;
@@ -122,7 +122,7 @@ export class BetterPromise {
    */
   start() {
     if (this.isCancelled) {
-      throw new Error("无法启动: 调度器已取消");
+      throw new Error('无法启动: 调度器已取消');
     }
 
     if (!this.isActive) {
@@ -168,11 +168,7 @@ export class BetterPromise {
     this.isCancelled = true;
 
     // 收集被取消的任务ID
-    const cancelledIds = [
-      ...this.pendingTasks.keys(),
-      ...this.activeTasks.keys(),
-      ...this.taskQueue.map((t) => t.id),
-    ];
+    const cancelledIds = [...this.pendingTasks.keys(), ...this.activeTasks.keys(), ...this.taskQueue.map((t) => t.id)];
 
     // 触发取消回调
     this.onCancel(cancelledIds);
@@ -193,8 +189,7 @@ export class BetterPromise {
     this.taskQueue = [];
 
     // 更新计数器
-    const remainingTasks =
-      this.totalTasks - this.completedCount - this.failedCount;
+    const remainingTasks = this.totalTasks - this.completedCount - this.failedCount;
     this.failedCount = remainingTasks; // 将所有剩余任务标记为失败
     this.cancelControllers.clear();
 
@@ -206,20 +201,20 @@ export class BetterPromise {
    * 取消任务的实际逻辑
    * @param {Object} task - 任务对象
    */
-  _cancelTask(task: TaskInfo) {
+  private _cancelTask(task: TaskInfo) {
     // 触发取消信号
     const controller = this.cancelControllers.get(task.id);
     if (controller) {
-      controller.abort("任务取消");
+      controller.abort('任务取消');
     }
 
     // 拒绝任务Promise
-    task.reject("任务取消");
+    task.reject('任务取消');
 
     // 记录结果
     this.taskResults.set(task.id, {
-      status: "cancelled",
-      reason: "任务取消",
+      status: 'cancelled',
+      reason: '任务取消',
       metadata: task.metadata,
       retries: task.retries,
     });
@@ -229,7 +224,7 @@ export class BetterPromise {
    * 将待处理任务加入执行队列
    * @param {number} taskId - 任务ID
    */
-  _queueTask(taskId: number) {
+  private _queueTask(taskId: number) {
     const task = this.pendingTasks.get(taskId);
     if (!task) return;
 
@@ -243,7 +238,7 @@ export class BetterPromise {
   /**
    * 处理任务队列
    */
-  _processQueue() {
+  private _processQueue() {
     // 如果已取消或暂停，不处理新任务
     if (this.isCancelled || this.isPaused) return;
 
@@ -251,10 +246,7 @@ export class BetterPromise {
     if (!this.isActive) return;
 
     // 当并发数未满且有待处理任务时
-    while (
-      this.activeTasks.size < this.concurrency &&
-      (this.taskQueue.length > 0 || this.pendingTasks.size > 0)
-    ) {
+    while (this.activeTasks.size < this.concurrency && (this.taskQueue.length > 0 || this.pendingTasks.size > 0)) {
       // 优先处理已排队的任务
       if (this.taskQueue.length > 0) {
         const task = this.taskQueue.shift()!;
@@ -274,7 +266,7 @@ export class BetterPromise {
    * 执行单个任务
    * @param {Object} task - 任务对象
    */
-  async _executeTask(task: TaskInfo) {
+  private async _executeTask(task: TaskInfo) {
     // 添加到活动任务集
     this.activeTasks.set(task.id, task);
 
@@ -296,7 +288,7 @@ export class BetterPromise {
    * @param {Object} task - 任务对象
    * @param {*} result - 任务结果
    */
-  _handleTaskSuccess(task: TaskInfo, result: Object) {
+  private _handleTaskSuccess(task: TaskInfo, result: Object) {
     // 如果已取消，不再处理结果
     if (this.isCancelled) return;
 
@@ -305,7 +297,7 @@ export class BetterPromise {
     this.cancelControllers.delete(task.id);
 
     this.taskResults.set(task.id, {
-      status: "fulfilled",
+      status: 'fulfilled',
       value: result,
       metadata: task.metadata,
       retries: task.retries,
@@ -322,19 +314,19 @@ export class BetterPromise {
    * @param {Object} task - 任务对象
    * @param {Error} error - 错误对象
    */
-  _handleTaskError(task: TaskInfo, error: Error) {
+  private _handleTaskError(task: TaskInfo, error: Error) {
     // 如果已取消，不再处理结果
     if (this.isCancelled) return;
 
     // 取消错误直接处理
-    if (error.name === "AbortError" || error.message === "Task cancelled") {
+    if (error.name === 'AbortError' || error.message === 'Task cancelled') {
       this.completedCount++;
       this.failedCount++;
       this.activeTasks.delete(task.id);
       this.cancelControllers.delete(task.id);
 
       this.taskResults.set(task.id, {
-        status: "cancelled",
+        status: 'cancelled',
         reason: error.message,
         metadata: task.metadata,
         retries: task.retries,
@@ -360,7 +352,7 @@ export class BetterPromise {
       this.cancelControllers.delete(task.id);
 
       this.taskResults.set(task.id, {
-        status: "rejected",
+        status: 'rejected',
         reason: error,
         metadata: task.metadata,
         retries: task.retries,
@@ -377,14 +369,14 @@ export class BetterPromise {
   /**
    * 报告进度
    */
-  _reportProgress() {
+  private _reportProgress() {
     this.onProgress(this.completedCount, this.totalTasks);
   }
 
   /**
    * 检查所有任务是否完成
    */
-  _checkCompletion() {
+  private _checkCompletion() {
     if (this.completedCount === this.totalTasks) {
       this.onComplete();
       this.isActive = false;
@@ -425,10 +417,9 @@ export class BetterPromise {
     const result = this.taskResults.get(taskId);
     if (result) return result;
 
-    if (this.pendingTasks.has(taskId)) return { status: "pending" };
-    if (this.taskQueue.some((t) => t.id === taskId))
-      return { status: "queued" };
-    if (this.activeTasks.has(taskId)) return { status: "active" };
+    if (this.pendingTasks.has(taskId)) return { status: 'pending' };
+    if (this.taskQueue.some((t) => t.id === taskId)) return { status: 'queued' };
+    if (this.activeTasks.has(taskId)) return { status: 'active' };
 
     return null;
   }

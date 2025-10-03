@@ -1,79 +1,81 @@
 <template>
-  <div class="container">
-    <div class="row">
-      <div class="w-full text-left">
-        <a
-          @click="$router.push('/')"
-          class="cursor-pointer text-blue-500"
-        >
-          返回主页
-        </a>
-      </div>
-      <div class="file-icon">
-        <font-awesome-icon :icon="`fa-solid fa-file`" />
-      </div>
-      <div class="file-info">
-        <div class="file-name">{{ name }}</div>
-        <div class="file-meta">
-          <span>
-            <font-awesome-icon :icon="`fa-solid fa-calendar-alt`" />
-            上传时间：<span id="uploadTime">{{ new Date(Number(date)).toLocaleString() }}</span>
-          </span>
-          <span>
-            <font-awesome-icon :icon="`fa-solid fa-database`" />
-            文件大小：<span id="fileSize">{{ formatFileSize(Number(size)) }}</span>
-          </span>
+  <div class="fixed top-0 left-0 w-[100vw] h-[100vh] grid">
+    <div class="container">
+      <div class="row">
+        <div class="w-full text-left">
+          <a
+            @click="$router.push('/')"
+            class="cursor-pointer text-(--primary)"
+          >
+            返回主页
+          </a>
         </div>
-      </div>
-      <button
-        class="btn"
-        id="download"
-        @click="start"
-        v-if="!isDownload"
-      >
-        <font-awesome-icon :icon="`fa-solid fa-download`" />
-        下载
-      </button>
-
-      <div
-        class="grid w-full mt-[10px] gap-[5px]"
-        v-if="isDownload"
-      >
-        <p>进度：{{ progress }}%</p>
-        <Progress :progress="progress"></Progress>
-      </div>
-      <div
-        class="control-bar"
-        v-if="isDownload && !isComplete"
-      >
-        <div
-          class="btn control-btn pause"
-          v-if="!isPause"
-          @click="pause"
-        >
-          暂停
+        <div class="file-icon">
+          <font-awesome-icon :icon="`fa-solid fa-file`" />
         </div>
+        <div class="file-info">
+          <div class="file-name">{{ name }}</div>
+          <div class="file-meta">
+            <span>
+              <font-awesome-icon :icon="`fa-solid fa-calendar-alt`" />
+              上传时间：<span id="uploadTime">{{ new Date(Number(date)).toLocaleString() }}</span>
+            </span>
+            <span>
+              <font-awesome-icon :icon="`fa-solid fa-database`" />
+              文件大小：<span id="fileSize">{{ formatFileSize(Number(size)) }}</span>
+            </span>
+          </div>
+        </div>
+        <button
+          class="btn"
+          id="download"
+          @click="start"
+          v-if="!isDownload"
+        >
+          <font-awesome-icon :icon="`fa-solid fa-download`" />
+          下载
+        </button>
 
         <div
-          class="btn control-btn resume"
-          v-if="isPause"
-          @click="resume"
+          class="grid w-full mt-[10px] gap-[5px]"
+          v-if="isDownload"
         >
-          继续
+          <p>进度：{{ progress }}%</p>
+          <Progress :progress="progress"></Progress>
         </div>
-      </div>
-
-      <div
-        v-if="isComplete"
-        class="mt-[10px]"
-      >
-        浏览器无响应？
-        <a
-          :href="blobLink"
-          :download="name"
-          class="text-blue-500"
-          >点我下载</a
+        <div
+          class="control-bar"
+          v-if="isDownload && !isComplete"
         >
+          <div
+            class="btn control-btn pause"
+            v-if="!isPause"
+            @click="pause"
+          >
+            暂停
+          </div>
+
+          <div
+            class="btn control-btn resume"
+            v-if="isPause"
+            @click="resume"
+          >
+            继续
+          </div>
+        </div>
+
+        <div
+          v-if="isComplete"
+          class="mt-[10px]"
+        >
+          浏览器无响应？
+          <a
+            :href="blobLink"
+            :download="name"
+            class="text-(--primary)"
+            >点我下载</a
+          >
+        </div>
       </div>
     </div>
   </div>
@@ -86,7 +88,8 @@
   import { formatFileSize } from '../utils/FormatSize';
   import request from '../utils/Request';
 
-  const sha = location.hash.replace('#/download/', '') ?? '';
+  const fileInfo = location.hash.replace('#/download/', '') ?? '';
+  const [path, sha] = fileInfo.split('&');
   const name = ref('未知');
   const date = ref('946656000000');
   const size = ref('0');
@@ -142,7 +145,7 @@
   });
 
   (async () => {
-    const res = await request.post(`/fileInfo`, { fileName: sha });
+    const res = await request.post(`/fileInfo`, { path, fileName: sha });
     name.value = res.name;
     date.value = res.date;
     size.value = res.size;
@@ -151,7 +154,7 @@
 
     for (let index = 0; index < chunkCount; index++) {
       bp.add(() => {
-        return request.post('/download', { sha, index }, { responseType: 'blob' }).then((response) => {
+        return request.post('/download', { path, sha, index }, { responseType: 'blob' }).then((response) => {
           return response;
         });
       });
@@ -173,11 +176,6 @@
     bp.resume();
   };
 </script>
-<style>
-  #app {
-    display: grid;
-  }
-</style>
 <style scoped>
   .container {
     max-width: 500px;

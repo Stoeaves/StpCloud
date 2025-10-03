@@ -38,9 +38,10 @@ export function sliceFile(file: File, chunkSize: number = 2 * 1024 * 1024): Blob
  * @param file 目标文件
  * @returns 状态码
  */
-export async function applyToken(fileInfo: atFileInfo) {
+export async function applyToken(path: string, fileInfo: atFileInfo) {
   const res = await request.post<{ code: number }>('/admin/applyToken', {
     adminPass: localStorage.getItem('adminPassword'),
+    path,
     ...fileInfo,
   });
 

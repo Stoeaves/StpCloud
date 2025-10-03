@@ -4,16 +4,22 @@ export default {
     const method = request.method;
     const contentType = request.headers.get('content-type');
 
+    if (method !== 'POST')
+      return returns({
+        code: 400,
+        message: 'Bad Request',
+      });
+
     // 文件列表
     if (pathname === '/list') return handle.fileList(request, env);
     // 文件夹列表
     if (pathname === '/folderList') return handle.folderList(request, env);
     // 文件信息
-    if (pathname === '/fileInfo' && method === 'POST') return handle.fileInfo(request, env, '', true);
+    if (pathname === '/fileInfo') return handle.fileInfo(request, env, '', true);
     // 文件下载
-    if (pathname === '/download' && method === 'POST') return handle.download(request, env);
+    if (pathname === '/download') return handle.download(request, env);
     // 管理员
-    if (pathname.startsWith('/admin') && method === 'POST') {
+    if (pathname.startsWith('/admin')) {
       var data;
       if (contentType?.includes('application/json')) data = await request.json();
       else if (contentType?.includes('multipart/form-data')) data = await request.formData();
@@ -35,13 +41,11 @@ export default {
       // 登录
       if (action === 'login') return admin.login(data, env);
       // 申请上传资格
-      if (action === 'applyToken') return admin.applyToken(data, request, env);
+      if (action === 'applyToken') return admin.applyToken(data, env);
       // 上传
-      if (action === 'upload') return admin.upload(data, request, env);
+      if (action === 'upload') return admin.upload(data, env);
       // 创建文件夹
-      if (action === 'createFolder') return admin.createFolder(data, request, env);
-      // 删除文件
-      if (action === 'delete') return admin.deleteFile(data, request, env);
+      if (action === 'createFolder') return admin.createFolder(data, env);
     }
 
     return returns({
@@ -93,7 +97,7 @@ function getHeader(env) {
  * 获取指定路径的文件列表
  */
 async function getListContent(path, env) {
-  const res = await fetch(`${getBaseURL(env)}${path}`, {
+  const res = await fetch(`${getBaseURL(env)}/${path}`, {
     headers: getHeader(env),
   });
 
@@ -147,23 +151,12 @@ async function blobToBase64(blob) {
 const handle = {
   // 文件列表
   fileList: async function (request, env) {
-    const method = request.method;
-    const { searchParams } = new URL(request.url);
+    const data = await request.json();
+    const path = data.get('path') ?? '';
 
-    const data = searchParams;
-    const path = data.get('path') ?? '/';
-
-    if (path !== '/') {
-      const folderInfo = await this.fileInfo(request, env, path.split('/').pop());
+    if (!!path) {
+      const folderInfo = await this.fileInfo(request, env, path);
       if (folderInfo.permission === 'private') {
-        if (method !== 'POST')
-          return returns({
-            code: 400,
-            message: 'Bad Request',
-          });
-
-        const data = await request.json();
-
         const adminPass = data.get('adminPass');
         const folderPwd = md5(data.get('folderPass'));
         const folderPass = await env.KV.get(`folder_${folderInfo.id}_pass`);
@@ -180,7 +173,7 @@ const handle = {
     const files = [];
     const filesList = list.filter((item) => item.type === 'dir' && !item.name.includes('folder-'));
     for (let i = 0; i < filesList.length; i++) {
-      const fileInf = await this.fileInfo(request, env, `${filesList[i].name}`);
+      const fileInf = await this.fileInfo(request, env, `${path}/${filesList[i].name}`);
       files.push({
         name: fileInf.name,
         type: fileInf.type,
@@ -196,11 +189,28 @@ const handle = {
 
   // 文件夹列表
   folderList: async function (request, env) {
-    const data = await getListContent('/', env);
+    const data = await request.json();
+    const path = data.get('path') ?? '';
+
+    if (!!path) {
+      const folderInfo = await this.fileInfo(request, env, path);
+      if (folderInfo.permission === 'private') {
+        const adminPass = data.get('adminPass');
+        const folderPwd = md5(data.get('folderPass'));
+        const folderPass = await env.KV.get(`folder_${folderInfo.id}_pass`);
+        if (folderPwd !== folderPass && !checkAdminPass(adminPass, env))
+          return returns({
+            code: 401,
+            message: 'Unauthorized',
+          });
+      }
+    }
+
+    const listData = await getListContent(path, env);
     const folders = [];
-    const foldersList = data.filter((item) => item.name.includes('folder-'));
+    const foldersList = listData.filter((item) => item.name.includes('folder-'));
     for (let i = 0; i < foldersList.length; i++) {
-      const folderInfo = await this.fileInfo(request, env, `${foldersList[i].name}`);
+      const folderInfo = await this.fileInfo(request, env, `${path}/${foldersList[i].name}`);
       folders.push({
         name: folderInfo.name,
         id: folderInfo.id,
@@ -213,13 +223,15 @@ const handle = {
 
   // 文件信息
   fileInfo: async function (request, env, fileName = '', isReturnResponse = false) {
+    let path = '';
     if (!fileName) {
       const data = await request.json();
       fileName = data.get('fileName');
+      path = data.get('path') === '' ? '' : `/${data.get('path')}`;
     }
 
     const res = await fetch(
-      `https://raw.githubusercontent.com/${env.REPO_OWNER}/${env.REPO_NAME}/${env.REPO_BRANCH}/${fileName}/info.json`,
+      `https://raw.githubusercontent.com/${env.REPO_OWNER}/${env.REPO_NAME}/${env.REPO_BRANCH}${path}/${fileName}/info.json`,
       { headers: getHeader(env) },
     );
     if (res.status === 404)
@@ -235,11 +247,12 @@ const handle = {
   // 文件下载
   download: async function (request, env) {
     const data = await request.json();
+    const path = data.get('path') === '' ? '' : `/${data.get('path')}`;
     const sha = data.get('sha');
     const index = data.get('index');
 
     const res = await fetch(
-      `https://raw.githubusercontent.com/${env.REPO_OWNER}/${env.REPO_NAME}/${env.REPO_BRANCH}/${sha}/${index}`,
+      `https://raw.githubusercontent.com/${env.REPO_OWNER}/${env.REPO_NAME}/${env.REPO_BRANCH}${path}/${sha}/${index}`,
       { headers: getHeader(env) },
     );
 
@@ -275,7 +288,8 @@ const handle = {
         return returns({ code });
       },
       // 申请上传资格
-      applyToken: async function (data, request, env) {
+      applyToken: async function (data, env) {
+        const path = data.get('path') === '' ? '' : `/${data.get('path')}`;
         const name = data.get('name');
         const type = data.get('type');
         const date = data.get('date');
@@ -283,7 +297,7 @@ const handle = {
         const sha = data.get('sha');
 
         // 判断文件是否已存在
-        const list = await getListContent('', env);
+        const list = await getListContent(path, env);
         const isExisted = list.filter((item) => item.name === sha);
         if (isExisted.length > 0)
           return returns({
@@ -299,7 +313,7 @@ const handle = {
         };
 
         // 上传文件信息
-        const res = await fetch(`${getBaseURL(env)}/${sha}/info.json`, {
+        const res = await fetch(`${getBaseURL(env)}${path}/${sha}/info.json`, {
           method: 'PUT',
           headers: getHeader(env),
           body: JSON.stringify({
@@ -320,14 +334,15 @@ const handle = {
         return returns({ code: 200 });
       },
       // 上传
-      upload: async function (data, request, env) {
+      upload: async function (data, env) {
+        const path = data.get('path') === '' ? '' : `/${data.get('path')}`;
         const sha = data.get('sha');
         const index = data.get('index');
         const chunk = data.get('chunk');
 
         // 将Blob转Base64
         const base64 = await blobToBase64(chunk);
-        const res = await fetch(`${getBaseURL(env)}/${sha}/${index}`, {
+        const res = await fetch(`${getBaseURL(env)}${path}/${sha}/${index}`, {
           method: 'PUT',
           headers: getHeader(env),
           body: JSON.stringify({
@@ -348,7 +363,8 @@ const handle = {
         return returns({ success: true });
       },
       // 创建文件夹
-      createFolder: async function (data, request, env) {
+      createFolder: async function (data, env) {
+        const path = data.get('path') === '' ? '' : `/${data.get('path')}`;
         const name = data.get('name');
         const id = Date.parse(new Date());
         const permission = data.get('permission');
@@ -364,7 +380,7 @@ const handle = {
           permission,
         };
 
-        const res = await fetch(`${getBaseURL(env)}/folder-${id}/info.json`, {
+        const res = await fetch(`${getBaseURL(env)}${path}/folder-${id}/info.json`, {
           method: 'PUT',
           headers: getHeader(env),
           body: JSON.stringify({
@@ -383,23 +399,6 @@ const handle = {
         }
 
         return returns({ code: 200, id });
-      },
-      // 删除文件
-      deleteFile: async function (data, request, env) {
-        const sha = data.get('sha');
-        const index = data.get('index');
-
-        const res = await fetch(`${getBaseURL(env)}/${sha}/${index}`, {
-          method: 'DELETE',
-          headers: getHeader(env),
-          body: JSON.stringify({
-            branch: env.REPO_BRANCH,
-            message: `Delete ${sha}`,
-            sha,
-          }),
-        });
-
-        return returns({ success: res.ok });
       },
     };
   },

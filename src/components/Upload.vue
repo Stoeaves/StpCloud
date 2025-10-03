@@ -81,7 +81,9 @@
   import { sliceFile, applyToken } from '../utils/Upload';
   import request from '../utils/Request';
 
+  const path = inject('path');
   const list = inject('list');
+
   const isUploading = ref(false);
   const isDragging = ref(false);
 
@@ -167,6 +169,8 @@
               date: Date.parse(new Date().toString()),
               sha: hash,
             });
+
+            sessionStorage.setItem(`list_${(path as any).value}`, JSON.stringify(list));
           }
 
           fileList.value = [];
@@ -179,7 +183,7 @@
         const hash = await hashGetter.getHash();
         const chunks = sliceFile(file, 2 * 1024 * 1024);
 
-        const at = await applyToken({
+        const at = await applyToken(((path as any).value as string).slice(1, -1), {
           name: file.name,
           type: getFileTypeByName(file.name),
           date: Date.parse(new Date().toString()),
@@ -201,6 +205,7 @@
           bp.add(() => {
             return new Promise(async (resolve, reject) => {
               const formData = new FormData();
+              formData.append('path', ((path as any).value as string).slice(1, -1));
               formData.append('sha', hash);
               formData.append('chunk', chunk);
               formData.append('index', i.toString());
