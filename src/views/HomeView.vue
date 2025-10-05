@@ -1,10 +1,5 @@
 <template>
   <Header>
-    <!-- <HeaderButton
-      text="搜索"
-      icon="search"
-    ></HeaderButton> -->
-
     <router-link
       to="/admin"
       class="no-underline"
