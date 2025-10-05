@@ -32,9 +32,6 @@ importers:
       nprogress:
         specifier: ^0.2.0
         version: 0.2.0
-      sweetalert2:
-        specifier: ^11.23.0
-        version: 11.23.0
       tailwindcss:
         specifier: ^4.1.12
         version: 4.1.12
@@ -44,9 +41,6 @@ importers:
       vue-router:
         specifier: ^4.5.1
         version: 4.5.1(vue@3.5.21(typescript@5.8.3))
-      vue-sweetalert2:
-        specifier: ^5.0.11
-        version: 5.0.11(vue@3.5.21(typescript@5.8.3))
     devDependencies:
       '@types/node':
         specifier: ^24.3.1
@@ -833,12 +827,6 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
-  sweetalert2@11.23.0:
-    resolution: {integrity: sha512-cKzzbC3C1sIs7o9XAMw4E8F9kBtGXsBDUsd2JZ8JM/dqa+nzWwSGM+9LLYILZWzWHzX9W+HJNHyBlbHPVS/krw==}
-
-  sweetalert2@11.4.4:
-    resolution: {integrity: sha512-9yYWQuRT1v9JNI/paPTSYV+68MHwe9C+HQ/I2jtfaFzoJgYRftWXOs4JqmDSjT7m2m4r8ebMMn8LcxD1Wq9B/w==}
-
   tailwindcss@4.1.12:
     resolution: {integrity: sha512-DzFtxOi+7NsFf7DBtI3BJsynR+0Yp6etH+nRPTbpWnS2pZBaSksv/JGctNwSWzbFjp0vxSqknaUylseZqMDGrA==}
 
@@ -909,11 +897,6 @@ packages:
     resolution: {integrity: sha512-ogAF3P97NPm8fJsE4by9dwSYtDwXIY1nFY9T6DyQnGHd1E2Da94w9JIolpe42LJGIl0DwOHBi8TcRPlPGwbTtw==}
     peerDependencies:
       vue: ^3.2.0
-
-  vue-sweetalert2@5.0.11:
-    resolution: {integrity: sha512-agujdlcNeLb4Fj0/V3qgR7bEVBN8IzWFoDBP/vrSgbEGl9pjMmxnv32V3lxB0SZtQh6tL6R/UZ+C3q8tzsJbNg==}
-    peerDependencies:
-      vue: '*'
 
   vue-tsc@3.0.6:
     resolution: {integrity: sha512-Tbs8Whd43R2e2nxez4WXPvvdjGbW24rOSgRhLOHXzWiT4pcP4G7KeWh0YCn18rF4bVwv7tggLLZ6MJnO6jXPBg==}
@@ -1572,10 +1555,6 @@ snapshots:
 
   source-map-js@1.2.1: {}
 
-  sweetalert2@11.23.0: {}
-
-  sweetalert2@11.4.4: {}
-
   tailwindcss@4.1.12: {}
 
   tapable@2.2.3: {}
@@ -1617,11 +1596,6 @@ snapshots:
   vue-router@4.5.1(vue@3.5.21(typescript@5.8.3)):
     dependencies:
       '@vue/devtools-api': 6.6.4
-      vue: 3.5.21(typescript@5.8.3)
-
-  vue-sweetalert2@5.0.11(vue@3.5.21(typescript@5.8.3)):
-    dependencies:
-      sweetalert2: 11.4.4
       vue: 3.5.21(typescript@5.8.3)
 
   vue-tsc@3.0.6(typescript@5.8.3):
