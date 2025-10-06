@@ -10,7 +10,7 @@
 - Fork [此仓库](https://github.com/Stoeaves/StpCloud)
 - 在你 Fork 的仓库里修改 **`vite.config.ts`** 中第 26 行的 **`__API_URL__`** 的链接改成你的 Worker 地址（可以自定义）
 - 创建一个`储存仓库`（可私密）
-> 我们强烈建议创建一个私密仓库以保护您的隐私
+> 我们强烈建议您不要创建一个私密仓库，因为私密仓库容量有限制
 
 ### Cloudflare
 - 创建一个 Worker（**数据处理Worker**）

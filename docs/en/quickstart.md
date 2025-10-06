@@ -10,7 +10,7 @@
 - Fork [this repository](https://github.com/Stoeaves/StpCloud)
 - Modify **`__API_URL__`** in **`vite.config.ts`** on line 26 into the URL of your Cloudflare Worker
 - Create a `storage repository` (it can be private)
-> We strongly recommend creating a private repository to protect your privacy
+> We strongly advise against creating a private repository, as private repositories have limited storage capacity
 
 ### Cloudflare
 - Create a worker (**Data Processing Worker**)
