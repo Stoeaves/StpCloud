@@ -20,14 +20,7 @@ export default {
     if (pathname === '/download') return handle.download(request, env);
     // 管理员
     if (pathname.startsWith('/admin')) {
-      var data;
-      if (contentType?.includes('application/json')) data = await request.json();
-      else if (contentType?.includes('multipart/form-data')) data = await request.formData();
-      else
-        return returns({
-          code: 400,
-          message: 'Bad Request',
-        });
+      const data = await request.json();
 
       const admin = handle.admin(data, env);
       if (admin === 401)
@@ -127,26 +120,6 @@ const base64 = (str) => {
   const utf8Bytes = new TextEncoder().encode(str);
   return btoa(String.fromCharCode.apply(null, utf8Bytes));
 };
-
-/**
- * 将 Blob 转换为 Base64
- * @param {Blob} blob - 要转换的 Blob 对象
- * @return {Promise<string>} - 返回 Base64 编码的字符串
- */
-async function blobToBase64(blob) {
-  const arrayBuffer = await blob.arrayBuffer();
-  const uintArray = new Uint8Array(arrayBuffer);
-
-  const chunkSize = 32768; // 32KB 安全块大小
-  let binaryString = '';
-
-  for (let i = 0; i < uintArray.length; i += chunkSize) {
-    const chunk = uintArray.subarray(i, Math.min(i + chunkSize, uintArray.length));
-    binaryString += String.fromCharCode.apply(null, chunk);
-  }
-
-  return btoa(binaryString);
-}
 
 const handle = {
   // 文件列表
@@ -338,17 +311,15 @@ const handle = {
         const path = data.get('path') === '' ? '' : `/${data.get('path')}`;
         const sha = data.get('sha');
         const index = data.get('index');
-        const chunk = data.get('chunk');
+        const chunkBase64 = data.get('chunk');
 
-        // 将Blob转Base64
-        const base64 = await blobToBase64(chunk);
         const res = await fetch(`${getBaseURL(env)}${path}/${sha}/${index}`, {
           method: 'PUT',
           headers: getHeader(env),
           body: JSON.stringify({
             branch: env.REPO_BRANCH,
             message: `Upload chunk ${index} for ${sha}`,
-            content: base64,
+            content: chunkBase64,
           }),
         });
 

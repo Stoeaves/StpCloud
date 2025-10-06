@@ -34,6 +34,29 @@ export function sliceFile(file: File, chunkSize: number = 2 * 1024 * 1024): Blob
 }
 
 /**
+ * 将 Blob 转换为 Base64
+ * @param {Blob} blob - 要转换的 Blob 对象
+ * @return {Promise<string>} - 返回 Base64 编码的字符串
+ */
+export async function chunkBlobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      // 提取纯Base64数据（去除data URL前缀）
+      const base64String = (reader.result as string).split(',')[1];
+      resolve(base64String);
+    };
+
+    reader.onerror = () => {
+      reject(new Error(`Failed to convert blob to Base64: ${reader.error?.message || 'Unknown error'}`));
+    };
+
+    reader.readAsDataURL(blob);
+  });
+}
+
+/**
  * 申请上传资格
  * @param file 目标文件
  * @returns 状态码

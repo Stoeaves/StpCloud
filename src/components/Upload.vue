@@ -78,7 +78,7 @@
   import { BetterPromise, type BpOptions } from '../classes/BetterPromise';
   import { FileHash } from '../classes/FileHash';
   import { formatFileSize } from '../utils/FormatSize';
-  import { sliceFile, applyToken } from '../utils/Upload';
+  import { sliceFile, applyToken, chunkBlobToBase64 } from '../utils/Upload';
   import request from '../utils/Request';
 
   const path = inject('path');
@@ -202,19 +202,19 @@
 
         for (let i = 0; i < chunks.length; i++) {
           const chunk = chunks[i];
+          const chunkBase64 = await chunkBlobToBase64(chunk);
           bp.add(() => {
             return new Promise<void>(async (resolve, reject) => {
-              const formData = new FormData();
-              formData.append('path', ((path as any).value as string).slice(1, -1));
-              formData.append('sha', hash);
-              formData.append('chunk', chunk);
-              formData.append('index', i.toString());
-
               try {
                 const res = await request.post<{
                   code: number;
                   message?: string;
-                }>('/admin/upload', formData);
+                }>('/admin/upload', {
+                  path: ((path as any).value as string).slice(1, -1),
+                  sha: hash,
+                  chunk: chunkBase64,
+                  index: i.toString(),
+                });
 
                 if (res.code === 400) reject(new Error());
 
