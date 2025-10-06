@@ -72,10 +72,10 @@
   }
 </style>
 
-<script setup>
+<script setup lang="ts">
   import { ref, inject } from 'vue';
   import Progress from './Progress.vue';
-  import { BetterPromise } from '../classes/BetterPromise';
+  import { BetterPromise, type BpOptions } from '../classes/BetterPromise';
   import { FileHash } from '../classes/FileHash';
   import { formatFileSize } from '../utils/FormatSize';
   import { sliceFile, applyToken } from '../utils/Upload';
@@ -87,19 +87,19 @@
   const isUploading = ref(false);
   const isDragging = ref(false);
 
-  const fileList = ref([]);
+  const fileList = ref<Array<{ file: File; progress: number; completed: boolean }>>([]);
 
-  const handleDragOver = (event) => {
+  const handleDragOver = (event: DragEvent) => {
     event.preventDefault();
     isDragging.value = true;
   };
 
-  const handleDragLeave = (event) => {
+  const handleDragLeave = (event: DragEvent) => {
     event.preventDefault();
     isDragging.value = false;
   };
 
-  const handleDrop = (event) => {
+  const handleDrop = (event: DragEvent) => {
     event.preventDefault();
     isDragging.value = false; // 拖拽结束，重置状态
 
@@ -110,14 +110,14 @@
   };
 
   const clickInput = () => {
-    const input = document.querySelector('input[type="file"]');
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     if (input) {
       input.click();
     }
   };
 
-  const uploadFiles = (event, files) => {
-    files = files || event.target.files;
+  const uploadFiles = (event: Event, files?: FileList) => {
+    files = files || ((event.target as HTMLInputElement).files as FileList);
 
     if (files && files.length > 0) {
       isUploading.value = true;
@@ -126,10 +126,10 @@
       }
 
       var fileId = 0;
-      const bpConfig = {
+      const bpConfig: BpOptions = {
         concurrency: 5,
         maxRetries: 20,
-        onProgress: (completed, total) => {
+        onProgress: (completed: number, total: number) => {
           const percent = Math.floor((completed / total) * 100);
           fileList.value[fileId].progress = percent;
         },
@@ -139,7 +139,7 @@
 
           uploadNext();
         },
-        onError: (error, taskId) => {
+        onError: (error: Error, taskId: number) => {
           cocoMessage.error(`文件【${fileList.value[fileId].file.name}】上传失败：${error}`);
           console.error(`文件【${fileList.value[fileId].file.name}】分片【${taskId}】上传失败：${error}`);
 
@@ -150,7 +150,7 @@
         },
       };
 
-      const uploadNext = async (isNext = true) => {
+      const uploadNext = async (isNext: boolean = true) => {
         if (isNext) fileId++;
 
         // 判断是否完全上传完毕
@@ -162,7 +162,7 @@
             const hashGetter = new FileHash(file);
             const hash = await hashGetter.getHash();
 
-            list.files.unshift({
+            (list as any).files.unshift({
               name: file.name,
               size: file.size,
               type: getFileTypeByName(file.name),
@@ -170,7 +170,7 @@
               sha: hash,
             });
 
-            sessionStorage.setItem(`list_${path.value}`, JSON.stringify(list));
+            sessionStorage.setItem(`list_${(path as any).value}`, JSON.stringify(list));
           }
 
           fileList.value = [];
@@ -181,9 +181,9 @@
         const file = fileList.value[fileId].file;
         const hashGetter = new FileHash(file);
         const hash = await hashGetter.getHash();
-        const chunks = sliceFile(file, 2 * 1024 * 1024);
+        const chunks = sliceFile(file, 1 * 1024 * 1024);
 
-        const at = await applyToken(path.value.slice(1, -1), {
+        const at = await applyToken(((path as any).value as string).slice(1, -1), {
           name: file.name,
           type: getFileTypeByName(file.name),
           date: Date.parse(new Date().toString()),
@@ -203,20 +203,25 @@
         for (let i = 0; i < chunks.length; i++) {
           const chunk = chunks[i];
           bp.add(() => {
-            return new Promise(async (resolve, reject) => {
+            return new Promise<void>(async (resolve, reject) => {
               const formData = new FormData();
-              formData.append('path', path.value.slice(1, -1));
+              formData.append('path', ((path as any).value as string).slice(1, -1));
               formData.append('sha', hash);
               formData.append('chunk', chunk);
               formData.append('index', i.toString());
 
               try {
-                const res = await request.post('/admin/upload', formData);
-                if (res.code === 400) reject();
+                const res = await request.post<{
+                  code: number;
+                  message?: string;
+                }>('/admin/upload', formData);
+
+                if (res.code === 400) reject(new Error());
+
                 resolve();
               } catch (error) {
                 console.error(`上传分片【${i}】时出错：${error}`);
-                reject();
+                reject(new Error());
               }
             });
           });
@@ -230,8 +235,8 @@
     }
   };
 
-  const getFileTypeByName = (filename) => {
-    function getFileExtension(filename) {
+  const getFileTypeByName = (filename: string) => {
+    function getFileExtension(filename: string) {
       const match = filename.match(/\.([^.]+)$/);
       return match ? match[1] : '';
     }

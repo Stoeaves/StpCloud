@@ -249,13 +249,13 @@ export class BetterPromise {
     while (this.activeTasks.size < this.concurrency && (this.taskQueue.length > 0 || this.pendingTasks.size > 0)) {
       // 优先处理已排队的任务
       if (this.taskQueue.length > 0) {
-        const task = this.taskQueue.shift()!;
+        const task = this.taskQueue.shift() as TaskInfo;
         this._executeTask(task);
       }
       // 否则从待处理任务中取一个
       else if (this.pendingTasks.size > 0) {
-        const taskId = this.pendingTasks.keys().next().value!;
-        const task = this.pendingTasks.get(taskId)!;
+        const taskId = this.pendingTasks.keys().next().value as number;
+        const task = this.pendingTasks.get(taskId) as TaskInfo;
         this.pendingTasks.delete(taskId);
         this._executeTask(task);
       }
@@ -319,7 +319,7 @@ export class BetterPromise {
     if (this.isCancelled) return;
 
     // 取消错误直接处理
-    if (error.name === 'AbortError' || error.message === 'Task cancelled') {
+    if (error?.name === 'AbortError' || error?.message === 'Task cancelled') {
       this.completedCount++;
       this.failedCount++;
       this.activeTasks.delete(task.id);
