@@ -150,7 +150,7 @@
     date.value = res.date;
     size.value = res.size;
 
-    const chunkCount = Math.ceil(Number(size.value) / (2 * 1024 * 1024));
+    const chunkCount = Math.ceil(Number(size.value) / __CHUNK_SIZE__);
 
     for (let index = 0; index < chunkCount; index++) {
       bp.add(() => {

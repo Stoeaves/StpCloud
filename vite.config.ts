@@ -22,5 +22,6 @@ export default defineConfig({
   },
   define: {
     __API_URL__: JSON.stringify('https://cloud-service.seave.top'),
+    __CHUNK_SIZE__: JSON.stringify(1024 * 1024 * 1), // 1MB
   },
 });

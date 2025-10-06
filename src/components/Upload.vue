@@ -181,7 +181,7 @@
         const file = fileList.value[fileId].file;
         const hashGetter = new FileHash(file);
         const hash = await hashGetter.getHash();
-        const chunks = sliceFile(file, 1 * 1024 * 1024);
+        const chunks = sliceFile(file, __CHUNK_SIZE__);
 
         const at = await applyToken(((path as any).value as string).slice(1, -1), {
           name: file.name,
