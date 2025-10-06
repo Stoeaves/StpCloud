@@ -212,11 +212,11 @@
 
               try {
                 const res = await request.post('/admin/upload', formData);
-                if (res.code === 400) reject(`上传分片【${i}】失败：${res.message}`);
-
+                if (res.code === 400) reject();
                 resolve();
               } catch (error) {
-                reject(`上传分片【${i}】时出错：${error}`);
+                console.error(`上传分片【${i}】时出错：${error}`);
+                reject();
               }
             });
           });
